@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Launch Odds Radar v14 — pre-token protocols, valued from their own record</title>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<header class="hero">
+  <div class="hero-copy">
+    <div class="eyebrow">Launch Odds Radar v14 &middot; pre-token protocols, valued from their own record</div>
+    <h1>What would the token be worth <span>if it launches?</span></h1>
+    <p class="sub">DefiLlama snapshot 2026-11-14 &middot; model radar-14 &middot; refitted in this browser. Implied value = TVL &times; fitted multiple &times; token odds.</p>
+    <p class="caveat">DefiLlama records no token for these protocols. That is not proof they have none; the odds are their peers&rsquo; record, not a forecast. This page never says a token will launch.</p>
+  </div>
+  <div class="stage" aria-hidden="true">
+    <div class="card3d c1"><b>×0.16</b><span>multiple at $100M TVL</span></div>
+    <div class="card3d c2"><b id="heroFarm">–</b><span>worth farming, this scenario</span></div>
+    <div class="card3d c3"><b>198</b><span>protocols ranked</span></div>
+  </div>
+</header>
+
+<section class="kpis" id="kpis"></section>
+<div class="integrity" id="integrity">Checking the table against its own data&hellip;</div>
+
+<section class="controls">
+  <label>Deposit plan size <b id="depVal">0.020%</b> of TVL
+    <input type="range" id="dep" min="0.00005" max="0.001" step="0.00001" value="0.0002"></label>
+  <label>Drop share <b id="dropVal">7.0%</b>
+    <input type="range" id="drop" min="0.01" max="0.2" step="0.005" value="0.07"></label>
+  <label>Horizon <b id="horVal">12 wk</b>
+    <input type="range" id="hor" min="4" max="26" step="1" value="12"></label>
+  <span class="gas">Gas budget $15.00 over 12 weeks &middot; T-bill 4% &middot; $25/h bar</span>
+</section>
+
+<section class="chartbox">
+  <div class="charthead"><h2>The size curve</h2><span id="curveNote"></span></div>
+  <svg id="curve" viewBox="0 0 640 78" role="img" aria-label="Fitted multiple against TVL with the 95 labelled protocols"></svg>
+  <p class="chartcap">Each dot is one of the 95 traded tokens the model was fitted on. Bigger protocols trade at a smaller multiple — the slope is &minus;0.55, and the curve, not a flat multiple, is what prices a launch.</p>
+</section>
+
+<section class="boardwrap">
+  <div class="boardbar">
+    <div class="filters" id="verdictFilters">
+      <button data-v="All" class="on">All 198</button>
+      <button data-v="Farm">Farm</button>
+      <button data-v="Marginal">Marginal</button>
+      <button data-v="Skip">Skip</button>
+    </div>
+    <select id="tier" aria-label="Tier"><option value="All">All tiers</option><option value="Watchlist">Watchlist</option><option value="Early">Early (&lt;$50.0M)</option><option value="Off-list">Off-list</option></select>
+    <select id="cat" aria-label="Category"><option value="All">All categories</option></select>
+    <select id="chain" aria-label="Chain"><option value="All">All chains</option></select>
+    <input id="q" type="search" placeholder="Search a protocol" aria-label="Search">
+    <button id="csvBtn">CSV</button>
+    <button id="jsonBtn">JSON</button>
+    <button id="resetBtn">Reset</button>
+  </div>
+  <div class="countline" id="countline"></div>
+  <div class="tablewrap"><table id="board">
+    <thead><tr>
+      <th data-s="rank">#</th><th data-s="name">Protocol</th><th data-s="tvl_usd">TVL</th><th data-s="change_7d">7D</th>
+      <th data-s="age_days">No-token age</th><th data-s="token_odds">Token odds</th><th data-s="if_launches_usd">If it launches</th>
+      <th data-s="implied_value_usd">Implied value &middot; P25–P75</th><th data-s="verdict">Verdict &middot; net of fees</th><th data-s="net_per_hour_usd">Net / hour</th>
+    </tr></thead>
+    <tbody id="rows"></tbody>
+  </table></div>
+</section>
+
+<section class="evidence">
+  <h2>Out-of-sample evidence — what was tested, what survived</h2>
+  <p class="evnote">A term enters only if it lowers the held-out miss on <b>both</b> leave-one-out and walk-forward, on the mean <b>and</b> the median. The rest are shown below, not used. The control row must not help — and it does not.</p>
+  <div class="evgrid">
+    <div><h3>Value — typical miss, 95 traded tokens</h3><table class="mini" id="vterms"></table></div>
+    <div><h3>Token odds — Brier score, 645 dated peers</h3><table class="mini" id="oterms"></table></div>
+  </div>
+  <div class="evgrid">
+    <div><h3>Category shrinkage sweep (ridge pseudo-observations)</h3><table class="mini" id="sweep"></table>
+      <p class="evnote" id="bootline"></p></div>
+    <div><h3>Is the printed range honest?</h3><div id="range"></div>
+      <p class="evnote">Ranges come from the leave-one-out residual spread (0.86 dex): P25–P75 is the model &times;10<sup>&plusmn;0.58</sup>, P10–P90 is &times;10<sup>&plusmn;1.10</sup>. Wide, because the honest spread is wide — the drawer shows the same width broken down per protocol.</p></div>
+  </div>
+  <div class="ledger" id="ledger"></div>
+</section>
+
+<section class="livebox">
+  <h2>Already trading — the market&rsquo;s own values, never mixed into the board</h2>
+  <table class="mini" id="live"></table>
+</section>
+
+<footer class="foot">
+  <p>Model radar-14: ridge on log<sub>10</sub> TVL plus shrunk category effects (ridge 16); odds: logistic on age, family and size. Farm rule: the modelled net must beat a 4% T-bill on the same deposit <b>and</b> $25 an hour, over the horizon, at the drop share. Yield earned meanwhile is left out. A farm plan costs $15.00 of gas over 12 weeks and 3.3 hours of hands-on time.</p>
+  <p>Method note: the walk-forward split trains on the 66 oldest listed tokens and tests on the 29 newest; the 47/48 split is the robustness check. No category-rate leakage anywhere: the model never uses a category&rsquo;s mean ratio. All figures on this page are recomputed in your browser from the same data file the table reads.</p>
+</footer>
+
+<aside class="drawer" id="drawer" hidden>
+  <div class="drawer-head"><button id="drawerClose" aria-label="Close">&times;</button></div>
+  <div id="drawerBody"></div>
+</aside>
+
+<script src="../data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
